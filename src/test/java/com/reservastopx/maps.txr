@@ -1,0 +1,30 @@
+
+
+
+com.reservastopx
+│
+├── controller
+│   ├── PaymentController.java
+│   └── ReservationController.java
+│
+├── dto
+│   ├── PaymentDTO.java
+│   └── ReservationDTO.java
+│
+├── mapper
+│   ├── PaymentMapper.java
+│   └── ReservationMapper.java
+│
+├── model
+│   ├── Payment.java
+│   ├── Reservation.java
+│   ├── enums/PaymentStatus.java
+│   └── ...
+│
+├── repository
+│   ├── PaymentRepository.java
+│   └── ReservationRepository.java
+│
+├── service
+│   ├── PaymentService.java
+│   └── ReservationService.java

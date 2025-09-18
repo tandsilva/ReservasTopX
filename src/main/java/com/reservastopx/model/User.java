@@ -17,14 +17,29 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    // Nome de usuário não precisa ser único
+    @Column(nullable = false)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
-    private String role; // "admin" ou "user"
+    private String role; // "admin", "user", "restaurant_owner" etc.
+
+    // CPF único e obrigatório
+    @Column(nullable = false, unique = true, length = 14)
+    private String cpf;
+
+    // Campos para CNPJ (opcional, usado por restaurantes)
+    @Column(unique = true, length = 18)
+    private String cnpj;
+
+    private String nomeFantasia; // Nome do restaurante
+    private String razaoSocial;  // Nome legal da empresa
+
+    private String telefone;
+    private String email;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
