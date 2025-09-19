@@ -1,7 +1,10 @@
 package com.reservastopx.model;
 
+import com.reservastopx.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,7 +20,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Nome de usuário não precisa ser único
     @Column(nullable = false)
     private String username;
 
@@ -25,24 +27,29 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role; // "admin", "user", "restaurant_owner" etc.
+    private Role role; // "admin", "user", "restaurant_owner" etc.
 
-    // CPF único e obrigatório
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
 
-    // Campos para CNPJ (opcional, usado por restaurantes)
     @Column(unique = true, length = 18)
     private String cnpj;
 
-    private String nomeFantasia; // Nome do restaurante
-    private String razaoSocial;  // Nome legal da empresa
+    private String nomeFantasia;
+    private String razaoSocial;
 
     private String telefone;
     private String email;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private int pontos = 0; // Novo campo para pontos
+
+    // Adiciona pontos ao usuário
+    public void adicionarPontos(int pontosAdicionados) {
+        this.pontos += pontosAdicionados;
+    }
 
     @PrePersist
     protected void onCreate() {
