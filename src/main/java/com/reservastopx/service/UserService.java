@@ -1,6 +1,7 @@
 package com.reservastopx.service;
 
 import com.reservastopx.dto.UserDTO;
+import com.reservastopx.enums.Role;
 import com.reservastopx.mapper.UserMapper;
 import com.reservastopx.model.User;
 import com.reservastopx.repository.UserRepository;
@@ -20,10 +21,21 @@ public class UserService {
         if(userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("Username já existe");
         }
+
+        if(userRepository.existsByCpf(userDTO.getCpf())) {
+            throw new IllegalArgumentException("CPF já cadastrado");
+        }
+
+        // Verifica se role é nula, define default como USER
+        if(userDTO.getRole() == null) {
+            userDTO.setRole(Role.USER);
+        }
+
         User user = UserMapper.toEntity(userDTO);
         User saved = userRepository.save(user);
         return UserMapper.toDTO(saved);
     }
+
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll()
@@ -43,6 +55,9 @@ public class UserService {
             user.setUsername(userDTO.getUsername());
             user.setPassword(userDTO.getPassword());
             user.setRole(userDTO.getRole());
+
+
+
             User updated = userRepository.save(user);
             return UserMapper.toDTO(updated);
         }).orElse(null);
@@ -55,4 +70,11 @@ public class UserService {
         }
         return false;
     }
+    public List<UserDTO> getUsersByRole(Role role) {
+        return userRepository.findByRole(role)
+                .stream()
+                .map(UserMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
 }

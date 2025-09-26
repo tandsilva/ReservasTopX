@@ -1,5 +1,6 @@
 package com.reservastopx.dto;
 
+import com.reservastopx.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -20,5 +21,19 @@ public class UserDTO {
     private String password;
 
     @Schema(description = "Role", example = "admin or user")
-    private String role;
+    private Role role;
+
+    @Schema(description = "CPF", example = "12345678901")
+    private String cpf;
+
+    @Schema(description = "CNPJ", example = "12345678000199")
+    private String cnpj;
+
+    private String nomeFantasia;
+    private String razaoSocial;
+
+    private String telefone;
+    private String email;
+
+    private int pontos;
 }

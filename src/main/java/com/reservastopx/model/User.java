@@ -3,7 +3,7 @@ package com.reservastopx.model;
 import com.reservastopx.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import java.time.LocalDateTime;
 
@@ -27,7 +27,8 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private Role role; // "admin", "user", "restaurant_owner" etc.
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
