@@ -3,6 +3,7 @@ package com.reservastopx.controller;
 import com.reservastopx.dto.UserDTO;
 import com.reservastopx.enums.Role;
 import com.reservastopx.service.UserService;
+import com.reservastopx.util.CNPJUtils;
 import com.reservastopx.util.CPFUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,14 @@ public class UserController {
     // Criar usuário
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-        if (!CPFUtils.isCPFValid(userDTO.getCpf())) {
+        // Validação de CPF
+        if (userDTO.getCpf() != null && !CPFUtils.isCPFValid(userDTO.getCpf())) {
             return ResponseEntity.badRequest().body("CPF inválido");
+        }
+
+        // Validação de CNPJ
+        if (userDTO.getCnpj() != null && !CNPJUtils.isCNPJValid(userDTO.getCnpj())) {
+            return ResponseEntity.badRequest().body("CNPJ inválido");
         }
 
         try {
@@ -32,6 +39,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
     // Buscar todos os usuários
     @GetMapping("/all")
