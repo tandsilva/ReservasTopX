@@ -1,5 +1,7 @@
 package com.reservastopx.service;
 
+import com.reservastopx.dto.ReservationDTO;
+import com.reservastopx.mapper.ReservationMapper;
 import com.reservastopx.model.Reservation;
 import com.reservastopx.model.Restaurant;
 import com.reservastopx.model.User;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,5 +47,27 @@ public class ReservationService {
         // Adicionar pontos ao usuário
         user.adicionarPontos(1);
         userRepository.save(user);
+    }
+    @Transactional
+    public void cancelarReserva(Long reservationId) {
+        Reservation reserva = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
+
+        reservationRepository.delete(reserva);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationDTO> listarTodasReservas() {
+        return reservationRepository.findAll()
+                .stream()
+                .map(ReservationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ReservationDTO buscarPorId(Long id) {
+        Reservation reserva = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
+        return ReservationMapper.toDTO(reserva);
     }
 }

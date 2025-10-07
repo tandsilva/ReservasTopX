@@ -1,5 +1,6 @@
 package com.reservastopx.controller;
-
+import com.reservastopx.dto.ReservationDTO;
+import java.util.List;
 import com.reservastopx.model.Restaurant;
 import com.reservastopx.model.User;
 import com.reservastopx.repository.RestaurantRepository;
@@ -49,5 +50,30 @@ public class ReservationController {
         reservationService.fazerReserva(userId, restaurantId, date);
 
         return ResponseEntity.ok("Reserva criada com sucesso!");
+    }
+    @GetMapping
+    public ResponseEntity<List<ReservationDTO>> listarTodas() {
+        List<ReservationDTO> reservas = reservationService.listarTodasReservas();
+        return ResponseEntity.ok(reservas);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ReservationDTO> buscarPorId(@PathVariable Long id) {
+        try {
+            ReservationDTO reserva = reservationService.buscarPorId(id);
+            return ResponseEntity.ok(reserva);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> cancelarReserva(@PathVariable Long id) {
+        try {
+            reservationService.cancelarReserva(id);
+            return ResponseEntity.ok("Reserva cancelada com sucesso.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
