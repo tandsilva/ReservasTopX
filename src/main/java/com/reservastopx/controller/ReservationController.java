@@ -1,33 +1,53 @@
 package com.reservastopx.controller;
 
+import com.reservastopx.model.Restaurant;
+import com.reservastopx.model.User;
+import com.reservastopx.repository.RestaurantRepository;
+import com.reservastopx.repository.UserRepository;
 import com.reservastopx.service.ReservationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @RestController
 @RequestMapping("/reservas")
+@RequiredArgsConstructor
 public class ReservationController {
 
-    @Autowired
-    private ReservationService reservationService;
+    private final ReservationService reservationService;
+    private final UserRepository userRepository;
+    private final RestaurantRepository restaurantRepository;
 
     @PostMapping("/fazer")
-    public void fazerReserva(
+    public ResponseEntity<String> fazerReserva(
             @RequestParam Long userId,
             @RequestParam Long restaurantId,
             @RequestParam String reservationDate) {
 
-        // Definindo um formato personalizado para a data (se necessário)
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Ex: 2025-09-19 14:30:00
+        // 1️⃣ Validar usuário
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // Converte a string para LocalDateTime usando o formato especificado
-        LocalDateTime date = LocalDateTime.parse(reservationDate, formatter);
+        // 2️⃣ Validar restaurante
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurante não encontrado"));
 
-        // Chama o serviço para fazer a reserva e adicionar pontos
-        reservationService.fazerReserva(userId, restaurantId,date);
+        LocalDateTime date;
+        try {
+            // Formato com dia/mês/ano e hora:minuto
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            date = LocalDateTime.parse(reservationDate, formatter);
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body("Formato de data inválido. Use dd/MM/yyyy HH:mm");
+        }
+
+        // 4️⃣ Chamar serviço
+        reservationService.fazerReserva(userId, restaurantId, date);
+
+        return ResponseEntity.ok("Reserva criada com sucesso!");
     }
 }
