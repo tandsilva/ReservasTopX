@@ -26,6 +26,7 @@ public class UserService {
             throw new IllegalArgumentException("CPF já cadastrado");
         }
 
+        validatePassword(userDTO.getPassword());
         // Verifica se role é nula, define default como USER
         if(userDTO.getRole() == null) {
             userDTO.setRole(Role.USER);
@@ -53,15 +54,20 @@ public class UserService {
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         return userRepository.findById(id).map(user -> {
             user.setUsername(userDTO.getUsername());
-            user.setPassword(userDTO.getPassword());
+
+            // ✅ Valida senha apenas se ela for informada (pra não obrigar atualizar senha sempre)
+            if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+                validatePassword(userDTO.getPassword());
+                user.setPassword(userDTO.getPassword());
+            }
+
             user.setRole(userDTO.getRole());
-
-
 
             User updated = userRepository.save(user);
             return UserMapper.toDTO(updated);
         }).orElse(null);
     }
+
 
     public boolean deleteUser(Long id) {
         if(userRepository.existsById(id)) {
@@ -76,5 +82,15 @@ public class UserService {
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
     }
-
+    private void validatePassword(String rawPassword) {
+        if (rawPassword == null || rawPassword.length() < 10) {
+            throw new IllegalArgumentException("Senha deve ter ao menos 10 caracteres");
+        }
+        if (!rawPassword.matches(".*[A-Z].*") ||
+                !rawPassword.matches(".*[a-z].*") ||
+                !rawPassword.matches(".*\\d.*") ||
+                !rawPassword.matches(".*[^A-Za-z0-9].*")) {
+            throw new IllegalArgumentException("Senha deve conter letras maiúsculas, minúsculas, números e símbolo");
+        }
+    }
 }
