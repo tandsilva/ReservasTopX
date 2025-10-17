@@ -1,9 +1,9 @@
 package com.reservastopx.model;
 
 import com.reservastopx.enums.Role;
+import com.reservastopx.security.CryptoConverter;
 import jakarta.persistence.*;
 import lombok.*;
-import jakarta.persistence.Id;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +24,7 @@ public class User {
     private String username;
 
     @Column(nullable = false)
+    @Convert(converter = CryptoConverter.class) // Criptografa a senha
     private String password;
 
     @Column(nullable = false)
@@ -31,9 +32,11 @@ public class User {
     private Role role;
 
     @Column(nullable = false, unique = true, length = 14)
+    @Convert(converter = CryptoConverter.class) // Criptografa o CPF
     private String cpf;
 
     @Column(unique = true, length = 18)
+    @Convert(converter = CryptoConverter.class) // Criptografa o CNPJ
     private String cnpj;
 
     private String nomeFantasia;
@@ -47,7 +50,6 @@ public class User {
 
     private int pontos = 0; // Novo campo para pontos
 
-    // Adiciona pontos ao usuário
     public void adicionarPontos(int pontosAdicionados) {
         this.pontos += pontosAdicionados;
     }
