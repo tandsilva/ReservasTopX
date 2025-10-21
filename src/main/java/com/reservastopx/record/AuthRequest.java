@@ -1,4 +1,11 @@
 package com.reservastopx.record;
 
-public record AuthRequest(String username, String password) {}
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+public class AuthRequest {
+    private String username;
+    private String password;
+}
