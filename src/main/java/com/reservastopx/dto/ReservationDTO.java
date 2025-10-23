@@ -11,4 +11,6 @@ public class ReservationDTO {
     private Long restaurantId;
     private LocalDateTime reservationDate;
     private LocalDateTime createdAt;
+    private String status;
+
 }

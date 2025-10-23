@@ -1,6 +1,8 @@
 package com.reservastopx.controller;
 import com.reservastopx.dto.ReservationDTO;
 import java.util.List;
+
+import com.reservastopx.enums.StatusReservation;
 import com.reservastopx.model.Restaurant;
 import com.reservastopx.model.User;
 import com.reservastopx.repository.RestaurantRepository;
@@ -67,7 +69,7 @@ public class ReservationController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}/cancelar")
     public ResponseEntity<String> cancelarReserva(@PathVariable Long id) {
         try {
             reservationService.cancelarReserva(id);
@@ -76,4 +78,19 @@ public class ReservationController {
             return ResponseEntity.notFound().build();
         }
     }
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<String> atualizarStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        try {
+            reservationService.atualizarStatus(id, StatusReservation.valueOf(status.toUpperCase()));
+            return ResponseEntity.ok("Status atualizado para " + status);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Status inválido. Use: PENDING, CONFIRMED, CANCELED ou COMPLETED.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
 }

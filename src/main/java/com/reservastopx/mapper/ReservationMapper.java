@@ -12,6 +12,8 @@ public class ReservationMapper {
         dto.setRestaurantId(reservation.getRestaurant().getId());
         dto.setReservationDate(reservation.getReservationDate());
         dto.setCreatedAt(reservation.getCreatedAt());
+        dto.setStatus(reservation.getStatus().name());
+
         return dto;
     }
 }

@@ -1,6 +1,7 @@
 package com.reservastopx.service;
 
 import com.reservastopx.dto.ReservationDTO;
+import com.reservastopx.enums.StatusReservation;
 import com.reservastopx.mapper.ReservationMapper;
 import com.reservastopx.model.Reservation;
 import com.reservastopx.model.Restaurant;
@@ -70,4 +71,26 @@ public class ReservationService {
                 .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
         return ReservationMapper.toDTO(reserva);
     }
+    @Transactional
+    public void confirmarReserva(Long id) {
+        var reserva = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
+        reserva.setStatus(StatusReservation.CONFIRMED);
+        reservationRepository.save(reserva);
+    }
+    @Transactional
+    public void atualizarStatus(Long id, StatusReservation novoStatus) {
+        var reserva = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
+
+        // Regras simples pra evitar bagunça
+        if (reserva.getStatus() == StatusReservation.CANCELED ||
+                reserva.getStatus() == StatusReservation.COMPLETED) {
+            throw new RuntimeException("Não é possível alterar uma reserva finalizada ou cancelada.");
+        }
+
+        reserva.setStatus(novoStatus);
+        reservationRepository.save(reserva);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.reservastopx.model;
 
 
+import com.reservastopx.enums.StatusReservation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,8 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Enumerated(EnumType.STRING)
+    private StatusReservation status = StatusReservation.PENDING;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
