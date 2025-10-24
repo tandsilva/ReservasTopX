@@ -26,8 +26,7 @@ public class UserDTO {
     @Schema(description = "CPF", example = "12345678901")
     private String cpf;
 
-    @Schema(description = "CNPJ", example = "12345678000199")
-    private String cnpj;
+
 
     private String nomeFantasia;
     private String razaoSocial;

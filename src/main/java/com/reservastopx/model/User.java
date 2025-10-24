@@ -3,8 +3,6 @@ package com.reservastopx.model;
 import com.reservastopx.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-import jakarta.persistence.Id;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,21 +18,21 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = false, unique = true, length = 14)
+    // 👇 Agora pode ser null (para ADMIN)
+    @Column(unique = true, length = 14, nullable = true)
     private String cpf;
 
-    @Column(unique = true, length = 18)
-    private String cnpj;
+
 
     private String nomeFantasia;
     private String razaoSocial;
@@ -45,9 +43,8 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private int pontos = 0; // Novo campo para pontos
+    private int pontos = 0;
 
-    // Adiciona pontos ao usuário
     public void adicionarPontos(int pontosAdicionados) {
         this.pontos += pontosAdicionados;
     }
