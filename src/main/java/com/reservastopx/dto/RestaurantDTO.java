@@ -16,4 +16,5 @@ public class RestaurantDTO {
     private String endereco;
     private String categoria;
     private LocalDateTime createdAt;
+
 }

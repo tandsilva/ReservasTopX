@@ -3,6 +3,9 @@ package com.reservastopx.repository;
 import com.reservastopx.model.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
-    // Nenhum código aqui dentro, o Spring Data já gera os métodos (findById, save, etc)
+    Optional<Restaurant> findByUserId(Long userId);
+
 }

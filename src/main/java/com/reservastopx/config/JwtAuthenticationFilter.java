@@ -12,8 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+
 import java.io.IOException;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -22,18 +23,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    // Não filtra /auth/** (login, refresh, etc.)
+    // Não filtra auth, swagger e OPTIONS (preflight)
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path != null && path.startsWith("/auth/");
+        String path = Optional.ofNullable(request.getServletPath()).orElse("");
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+        return path.startsWith("/auth/")
+                || path.startsWith("/v3/api-docs/")
+                || path.startsWith("/swagger-ui")
+                || path.equals("/swagger-ui.html")
+                || path.startsWith("/error")
+                || path.startsWith("/actuator");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        // Se já tem auth no contexto, segue o fluxo
+        // Se já tem auth no contexto, segue
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             chain.doFilter(req, res);
             return;
@@ -41,8 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String auth = req.getHeader("Authorization");
         if (auth == null || !auth.startsWith("Bearer ")) {
-            // Sem token → segue; endpoints públicos continuam acessíveis,
-            // e os protegidos vão retornar 401/403 pelo SecurityConfig.
             chain.doFilter(req, res);
             return;
         }
@@ -50,33 +55,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = auth.substring(7);
 
         try {
-            // Valida assinatura/expiração
             if (!jwtUtil.isTokenValid(token)) {
-                chain.doFilter(req, res); // token inválido → deixa o Security decidir
+                chain.doFilter(req, res);
                 return;
             }
 
-            // Extrai subject (username) e roles
             String username = jwtUtil.getUsernameFromToken(token);
-            var roles = jwtUtil.getRolesFromToken(token); // ex.: ["ROLE_ADMIN","ROLE_USER"]
-
-            if (username != null) {
-                var authorities = roles == null ? java.util.List.<SimpleGrantedAuthority>of()
-                        : roles.stream()
-                        .filter(Objects::nonNull)
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
-                var authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (username == null || username.isBlank()) {
+                chain.doFilter(req, res);
+                return;
             }
 
-        } catch (Exception e) {
-            // Qualquer problema no parsing: não autentica; deixa o fluxo seguir.
-            // Endpoints que exigem auth responderão 401/403.
+            // Tenta obter lista de roles do token
+            List<String> roles = jwtUtil.getRolesFromToken(token); // ex.: ["ADMIN"] ou ["ROLE_ADMIN"]
+            if (roles == null || roles.isEmpty()) {
+                // fallback: alguns projetos guardam "role" singular
+                String singleRole = safeGetSingleRole(jwtUtil, token); // tenta "ADMIN"/"ROLE_ADMIN"
+                roles = singleRole == null ? List.of() : List.of(singleRole);
+            }
+
+            // Normaliza para sempre "ROLE_..."
+            var authorities = roles.stream()
+                    .filter(Objects::nonNull)
+                    .map(this::ensureRolePrefix)
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+
+            var authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        } catch (Exception ignored) {
+            // qualquer problema → não autentica; SecurityConfig decide (401/403)
         }
 
         chain.doFilter(req, res);
+    }
+
+    private String ensureRolePrefix(String role) {
+        String r = role.trim();
+        return r.startsWith("ROLE_") ? r : "ROLE_" + r;
+    }
+
+    // Fallback seguro para pegar uma role singular se seu JwtUtil der suporte
+    private String safeGetSingleRole(JwtUtil jwtUtil, String token) {
+        try {
+            // Se você tiver jwtUtil.getRoleFromToken(token) use aqui:
+            // return jwtUtil.getRoleFromToken(token);
+            return null; // mantenha null se não existir método singular
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
